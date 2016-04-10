@@ -33,34 +33,35 @@ from models import TeeShirtSize
 
 from settings import WEB_CLIENT_ID
 
+
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-@endpoints.api( name='conference',
-                version='v1',
-                allowed_client_ids=[WEB_CLIENT_ID, API_EXPLORER_CLIENT_ID],
-                scopes=[EMAIL_SCOPE])
+@endpoints.api( name='conference', version='v1', scopes=[EMAIL_SCOPE]
+                allowed_client_ids=[WEB_CLIENT_ID, API_EXPLORER_CLIENT_ID] )
 class ConferenceApi(remote.Service):
     """Conference API v0.1"""
 
-# - - - Profile objects - - - - - - - - - - - - - - - - - - -
 
-    def _copyProfileToForm(self, prof):
+    # - - - Helper Functions - - - - - - - - - - - - - - - - - - -
+
+    def _copyProfileToForm(self, profile):
         """Copy relevant fields from Profile to ProfileForm."""
-        # copy relevant fields from Profile to ProfileForm
-        pf = ProfileForm()
-        for field in pf.all_fields():
-            if hasattr(prof, field.name):
+        profileForm = ProfileForm()
+        for field in profileForm.all_fields():
+            if hasattr(profile, field.name):
                 # convert t-shirt string to Enum; just copy others
                 if field.name == 'teeShirtSize':
-                    setattr(pf, field.name, getattr(TeeShirtSize, getattr(prof, field.name)))
+                    setattr( profileForm,
+                             field.name,
+                             getattr(TeeShirtSize, getattr(profile, field.name)) )
                 else:
-                    setattr(pf, field.name, getattr(prof, field.name))
-        pf.check_initialized()
-        return pf
-
+                    setattr( profileForm,
+                             field.name,
+                             getattr(profile, field.name) )
+        profileForm.check_initialized()
+        return profileForm
 
     def _getProfileFromUser(self):
         """Return user Profile from datastore, creating new one if non-existent."""
@@ -78,46 +79,44 @@ class ConferenceApi(remote.Service):
             profile = Profile(
                 userId = None,
                 key = None,
-                displayName = "Test", 
+                displayName = "Test",
                 mainEmail= None,
                 teeShirtSize = str(TeeShirtSize.NOT_SPECIFIED),
             )
-
-        return profile      # return Profile
-
+        return profile
 
     def _doProfile(self, save_request=None):
         """Get user Profile and return to user, possibly updating it first."""
         # get user Profile
-        prof = self._getProfileFromUser()
-
-        # if saveProfile(), process user-modifyable fields
+        profile = self._getProfileFromUser()
+        # if saveProfile(), process user-modifiable fields
         if save_request:
             for field in ('displayName', 'teeShirtSize'):
                 if hasattr(save_request, field):
                     val = getattr(save_request, field)
                     if val:
-                        setattr(prof, field, str(val))
-
+                        setattr(profile, field, str(val))
         # return ProfileForm
-        return self._copyProfileToForm(prof)
+        return self._copyProfileToForm(profile)
 
 
-    @endpoints.method(message_types.VoidMessage, ProfileForm,
-            path='profile', http_method='GET', name='getProfile')
+    # - - - Endpoint Routing  - - - - - - - - - - - - - - - - - - -
+
+    @endpoints.method( message_types.VoidMessage, ProfileForm,
+                       path='profile', http_method='GET', name='getProfile' )
     def getProfile(self, request):
         """Return user profile."""
         return self._doProfile()
+        # TODO 1
+        # 1. change request class
+        # 2. pass request to _doProfile function
 
-    # TODO 1
-    # 1. change request class
-    # 2. pass request to _doProfile function
-    @endpoints.method(message_types.VoidMessage, ProfileForm,
-            path='profile', http_method='POST', name='saveProfile')
+    @endpoints.method( message_types.VoidMessage, ProfileForm,
+                       path='profile', http_method='POST', name='saveProfile' )
     def saveProfile(self, request):
         """Update & return user profile."""
         return self._doProfile()
 
 
 # registers API
-api = endpoints.api_server([ConferenceApi]) 
+api = endpoints.api_server([ConferenceApi])

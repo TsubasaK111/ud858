@@ -10,13 +10,13 @@ App Engine application for the Udacity training course.
 - [Google Cloud Endpoints][3]
 
 ## Setup Instructions
-1. Update the value of `application` in `app.yaml` to the app ID you
+1. (COMPLETED) Update the value of `application` in `app.yaml` to the app ID you
    have registered in the App Engine admin console and would like to use to host
    your instance of this sample.
-1. Update the values at the top of `settings.py` to
+1. (COMPLETED) Update the values at the top of `settings.py` to
    reflect the respective client IDs you have registered in the
    [Developer Console][4].
-1. Update the value of CLIENT_ID in `static/js/app.js` to the Web client ID
+1. (COMPLETED) Update the value of CLIENT_ID in `static/js/app.js` to the Web client ID
 1. (Optional) Mark the configuration files as unchanged as follows:
    `$ git update-index --assume-unchanged app.yaml settings.py static/js/app.js`
 1. Run the app with the devserver using `dev_appserver.py DIR`, and ensure it's running by visiting
